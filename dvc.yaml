@@ -1,0 +1,9 @@
+stages:
+
+  train_test_split:
+    cmd: python -m src.data.split_train_test data/raw/train_ship_segmentations_v2.csv data/processed
+    deps:
+      - data/raw/train_ship_segmentations_v2.csv
+    outs:
+      - data/processed/train_data.csv
+      - data/processed/test_data.csv

@@ -1,0 +1,27 @@
+schema: '2.0'
+stages:
+  remove_duplicates:
+    cmd: python -m src.data.remove_duplicates data/raw/train_ship_segmentations_v2.csv
+      data/interim/data_cleaned.csv
+    deps:
+    - path: data/raw/train_ship_segmentations_v2.csv
+      md5: 875795f0656838f3ad8f817cdc98df3e
+      size: 45093109
+    outs:
+    - path: data/interim/data_cleaned.csv
+      md5: 3dff5da615e45f1c86d7fefb09d383e8
+      size: 28901901
+  train_test_split:
+    cmd: python -m src.data.split_train_test data/raw/train_ship_segmentations_v2.csv
+      data/processed
+    deps:
+    - path: data/raw/train_ship_segmentations_v2.csv
+      md5: 875795f0656838f3ad8f817cdc98df3e
+      size: 45093109
+    outs:
+    - path: data/processed/test_data.csv
+      md5: 7faeab19b52f37876223f528d596d2e3
+      size: 6691909
+    - path: data/processed/train_data.csv
+      md5: bd04571026f07b18a7fd25ce0597badd
+      size: 38401222
