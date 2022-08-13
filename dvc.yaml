@@ -1,9 +1,23 @@
 stages:
 
-  train_test_split:
-    cmd: python -m src.data.split_train_test data/raw/train_ship_segmentations_v2.csv data/processed
+  prepare_dataset:
+    cmd: python -m src.data.prepare_dataset data/raw/train_ship_segmentations_v2.csv data/interim/data_cleaned.csv
     deps:
       - data/raw/train_ship_segmentations_v2.csv
     outs:
+      - data/interim/data_cleaned.csv
+  
+  balance_data:
+    cmd: python -m src.data.balance_data data/interim/data_cleaned.csv data/interim/balanced_data.csv
+    deps:
+      - data/interim/data_cleaned.csv
+    outs:
+      - data/interim/balanced_data.csv
+
+  train_validation_split:
+    cmd: python -m src.data.split_train_val data/interim/balanced_data.csv data/processed
+    deps:
+      - data/interim/balanced_data.csv
+    outs:
       - data/processed/train_data.csv
-      - data/processed/test_data.csv
+      - data/processed/val_data.csv
