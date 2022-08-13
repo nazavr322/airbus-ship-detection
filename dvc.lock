@@ -25,3 +25,37 @@ stages:
     - path: data/processed/train_data.csv
       md5: bd04571026f07b18a7fd25ce0597badd
       size: 38401222
+  prepare_dataset:
+    cmd: python -m src.data.prepare_dataset data/raw/train_ship_segmentations_v2.csv
+      data/interim/data_cleaned.csv
+    deps:
+    - path: data/raw/train_ship_segmentations_v2.csv
+      md5: 875795f0656838f3ad8f817cdc98df3e
+      size: 45093109
+    outs:
+    - path: data/interim/data_cleaned.csv
+      md5: f0c9fb289cbfb6c40a4551dac4fdf205
+      size: 44930546
+  balance_data:
+    cmd: python -m src.data.balance_data data/interim/data_cleaned.csv data/interim/balanced_data.csv
+    deps:
+    - path: data/interim/data_cleaned.csv
+      md5: f0c9fb289cbfb6c40a4551dac4fdf205
+      size: 44930546
+    outs:
+    - path: data/interim/balanced_data.csv
+      md5: 59b9af00b8d8c39cce771269e4f6c58c
+      size: 20324373
+  train_validation_split:
+    cmd: python -m src.data.split_train_val data/interim/balanced_data.csv data/processed
+    deps:
+    - path: data/interim/balanced_data.csv
+      md5: 59b9af00b8d8c39cce771269e4f6c58c
+      size: 20324373
+    outs:
+    - path: data/processed/train_data.csv
+      md5: 059e9bfc144288b4fa9bfe6f2e0b2770
+      size: 17929339
+    - path: data/processed/val_data.csv
+      md5: 8e638f644eb6ef1c2b549fb2ea45d585
+      size: 2395066
