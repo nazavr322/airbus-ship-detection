@@ -1,7 +1,14 @@
+import os
+
 import tensorflow as tf
 from tensorboard.data.experimental import make_csv_dataset
+from dotenv import load_dotenv
 
 from .functional import rle_decode
+
+
+load_dotenv()
+RANDOM_STATE = int(os.environ['RANDOM_STATE'])
 
 
 def _parse_image(filename, targ_dir=None):
@@ -48,7 +55,8 @@ def get_dataset(data_path: str, batch_size: int, augmentations=None):
         batch_size,
         select_columns=['ImageId', 'EncodedPixels'],
         label_name='EncodedPixels',
-        num_epochs=1
+        num_epochs=1,
+        shuffle_seed=RANDOM_STATE
     )
     dataset = dataset.map(parse_batch)
     if augmentations:
