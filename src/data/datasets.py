@@ -41,7 +41,7 @@ def configure_for_perfomance(dataset):
     return dataset
 
 
-def get_dataset(data_path: str, batch_size: int):
+def get_dataset(data_path: str, batch_size: int, augmentations=None):
     """Creates dataset from a .csv file located at `data_path`"""
     dataset = make_csv_dataset(
         data_path,
@@ -49,5 +49,7 @@ def get_dataset(data_path: str, batch_size: int):
         select_columns=['ImageId', 'EncodedPixels'],
         label_name='EncodedPixels'
     )
-    dataset = configure_for_perfomance(dataset.map(parse_batch))
-    return dataset
+    dataset = dataset.map(parse_batch)
+    if augmentations:
+        dataset = dataset.map(augmentations)
+    return configure_for_perfomance(dataset)
