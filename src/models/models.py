@@ -1,13 +1,14 @@
-from tensorflow.keras import Model
+import tensorflow as tf
+from tensorflow.keras import Model, Input
 from tensorflow.keras.layers import UpSampling2D, concatenate, Conv2D
-from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input 
 
 
 def get_skip_connections(model):
     """Returns a list of a layers, which outputs need to be forwarded to decoder"""
     skip_connections = []
     # add input layer and first activation
-    skip_connections.append(model.get_layer(index=0))
+    skip_connections.append(model.get_layer('tf.nn.bias_add'))
     skip_connections.append(model.get_layer('conv1_relu'))
 
     for i, layer in enumerate(model.layers[:-1]):
@@ -38,11 +39,15 @@ def add_upsamling_block(model, previous_layer, encoder_layer):
 
 def create_unet50(weights: str = None):
     """Creates a UNet acrhitecture with pretrained ResNet50 encoder"""
+    # process image to be compatible with ResNet
+    inp = Input((768, 768, 3), dtype=tf.uint8)
+    inp = preprocess_input(tf.cast(inp, tf.float32))
+    
     # if weights are provided, don't load pretrained resnet
     resnet_weights = None if weights else 'imagenet'
     
     # create and freeze encoder
-    model = ResNet50(False, resnet_weights, input_shape=(768, 768, 3))
+    model = ResNet50(False, resnet_weights, input_tensor=inp, input_shape=(768, 768, 3))
     model.trainable = False
 
     # get skip connections
@@ -60,3 +65,8 @@ def create_unet50(weights: str = None):
     if weights:
         model.load_weights(weights)
     return model
+
+
+if __name__ == '__main__':
+    model = create_unet50()
+    model.summary()
