@@ -1,7 +1,7 @@
 import os
 
 import tensorflow as tf
-from tensorboard.data.experimental import make_csv_dataset
+from tensorflow.data.experimental import make_csv_dataset
 from dotenv import load_dotenv
 
 from .functional import rle_decode
@@ -36,7 +36,6 @@ def parse_batch(x, y):
     images = tf.map_fn(parse_image, x['ImageId'], fn_output_signature=tf.uint8)
     masks = tf.map_fn(tf_rle_decode, y, fn_output_signature=tf.uint8)
     return images, masks
-
 
 
 def configure_for_perfomance(dataset):
