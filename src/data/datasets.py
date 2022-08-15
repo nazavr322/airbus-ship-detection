@@ -51,5 +51,5 @@ def get_dataset(data_path: str, batch_size: int, augmentations=None):
     )
     dataset = dataset.map(parse_batch)
     if augmentations:
-        dataset = dataset.map(augmentations)
+        dataset = dataset.map(lambda x, y: (augmentations(x), y))
     return configure_for_perfomance(dataset)
