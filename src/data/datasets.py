@@ -47,7 +47,8 @@ def get_dataset(data_path: str, batch_size: int, augmentations=None):
         data_path,
         batch_size,
         select_columns=['ImageId', 'EncodedPixels'],
-        label_name='EncodedPixels'
+        label_name='EncodedPixels',
+        num_epochs=1
     )
     dataset = dataset.map(parse_batch)
     if augmentations:
