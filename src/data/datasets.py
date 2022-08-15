@@ -31,6 +31,16 @@ def parse_batch(x, y):
     return images, masks
 
 
+
+def configure_for_perfomance(dataset):
+    """
+    Enables caching and prefetching to optimize perfomance
+    """
+    dataset = dataset.cache()
+    dataset = dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
+    return dataset
+
+
 def get_dataset(data_path: str, batch_size: int):
     """Creates dataset from a .csv file located at `data_path`"""
     dataset = make_csv_dataset(
@@ -39,4 +49,5 @@ def get_dataset(data_path: str, batch_size: int):
         select_columns=['ImageId', 'EncodedPixels'],
         label_name='EncodedPixels'
     )
-    return dataset.map(parse_batch)
+    dataset = configure_for_perfomance(dataset.map(parse_batch))
+    return dataset
