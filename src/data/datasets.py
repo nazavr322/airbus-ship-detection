@@ -1,63 +1,74 @@
 import os
+import math
+from functools import partial
 
+import pandas as pd
+import numpy as np
+import cv2 as cv
 import tensorflow as tf
+from tensorflow.keras.utils import Sequence
 from tensorflow.data.experimental import make_csv_dataset
 from dotenv import load_dotenv
 
+from src import ROOT_DIR
 from .functional import rle_decode
 
 
-load_dotenv()
-RANDOM_STATE = int(os.environ['RANDOM_STATE'])
-
-
-def _parse_image(filename, targ_dir=None):
-    """Returns image as a tf.Tensor. `targ_dir` is a location to search for images"""
-    img_dir = targ_dir if targ_dir else 'data/raw/train_v2'
-    filepath = tf.strings.join([str(ROOT_DIR), img_dir, filename], separator=os.sep)
-    img = tf.io.read_file(filepath)
-    img = tf.io.decode_jpeg(img)
-    return img
-
-
-def tf_rle_decode(rle_str):
+class AirbusDataset(Sequence):
     """
-    Wrapper for `rle_decode` function to be compatible with tensorflow's eager execution
+    Custom dataset to iterate over .csv file.
+    Returns batch of images and corresponding masks, every time __getitem__ is called.
     """
-    mask = tf.py_function(rle_decode, [rle_str], tf.uint8)
-    return mask
+    def __init__(
+        self,
+        csv_path: str,
+        target_dir: str,
+        batch_size: int = 64,
+        img_size: int = 768,
+        transforms=None
+    ):
+        self.df = pd.read_csv(csv_path)
+        self.target_dir = target_dir
+        self.batch_size = batch_size
+        self.img_size = (img_size, img_size)
+        self.transforms = transforms
+    
+    def __len__(self) -> int:
+        """Returns amount of batches"""
+        return math.ceil(len(self.df) / self.batch_size)
+    
+    def _read_img(self, filename: str) -> np.ndarray:
+        """
+        Reads image from file and returns it resized version of size `self.img_size`
+        with float values in range [0, 1]
+        """
+        img = cv.imread(os.path.join(self.target_dir, filename))
+        img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        img = cv.resize(img, self.img_size)
+        return np.float32(img / 255)
+    
+    def _read_mask(self, rle_str: str) -> np.ndarray:
+        """Creates image mask of size `self.img_size` from run-length decoded string """
+        mask = rle_decode(rle_str)
+        mask = cv.resize(mask, self.img_size)
+        return mask.astype(np.float32)
 
-
-def parse_batch(x, y):
-    """
-    Processes a batch of images.
-    For each filename-rle_mask pair returns corresponding image array as tf.Tensor 
-    """
-    images = tf.map_fn(parse_image, x['ImageId'], fn_output_signature=tf.uint8)
-    masks = tf.map_fn(tf_rle_decode, y, fn_output_signature=tf.uint8)
-    return images, masks
-
-
-def configure_for_perfomance(dataset):
-    """
-    Enables caching and prefetching to optimize perfomance
-    """
-    dataset = dataset.cache()
-    dataset = dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
-    return dataset
-
-
-def get_dataset(data_path: str, batch_size: int, augmentations=None):
-    """Creates dataset from a .csv file located at `data_path`"""
-    dataset = make_csv_dataset(
-        data_path,
-        batch_size,
-        select_columns=['ImageId', 'EncodedPixels'],
-        label_name='EncodedPixels',
-        num_epochs=1,
-        shuffle_seed=RANDOM_STATE
-    )
-    dataset = dataset.map(parse_batch)
-    if augmentations:
-        dataset = dataset.map(lambda x, y: (augmentations(x), y))
-    return configure_for_perfomance(dataset)
+    def __getitem__(self, idx) -> tuple[np.ndarray, np.ndarray]:
+        """Returns batch of images and corresponding masks"""
+        # get batch of dataframe samples starting from idx
+        sub_df = self.df.iloc[idx * self.batch_size:(idx + 1) * self.batch_size]
+        # create batch of images
+        batch_x = np.array(
+            [self._read_img(filename) for filename in sub_df.ImageId]
+        )
+        # create batch of masks
+        batch_y = np.array(
+            [self._read_mask(rle_str) for rle_str in sub_df.EncodedPixels]
+        )
+        # if transforms is specified ...
+        if self.transforms:
+            # ... apply same augmentation for each image and mask in a batch
+            for i, img in enumerate(batch_x):
+                res = self.transforms(image=img, mask=batch_y[i])
+                batch_x[i], batch_y[i] = res.values()
+        return batch_x, batch_y.reshape(*batch_y.shape, -1)
