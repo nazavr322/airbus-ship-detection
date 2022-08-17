@@ -105,3 +105,5 @@ After you cloned a git repo:
 - Now, to generate processed data, run `dvc repro` command from the project root folder. It will generate all needed .csv files step-by-step and then start the training process. 
 
 After this you can continue experimenting with model hyperparameters or explore jupyter notebook with EDA and visualizations!
+
+
