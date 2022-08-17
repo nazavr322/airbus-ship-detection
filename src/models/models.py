@@ -82,7 +82,7 @@ def _double_conv_block(x, n_filters):
     return x
 
 
-def create_unet(input_shape: tuple[int], weights=None) -> Model:
+def create_unet(input_shape: tuple[int, ...], weights=None) -> Model:
     """Creates model with UNet architecture"""
     inp = Input(input_shape, dtype=tf.float32)
     x = BatchNormalization()(inp)
