@@ -59,9 +59,9 @@ I can divide my work on this problem into a 3  most important parts:
 	1. **The first thing to check is a distribution of our data**
 			<img src="https://github.com/nazavr322/airbus-ship-detection/blob/main/reports/figures/distribution_of_data.png">
 	As you can see, we have a severe imbalance. Almost 78% of images doesn't have ships on it at all, it is not very useful for ship segmentation task :)
-	In order to make situation a little bit better a performed a series of transforms.	
-	2. **Data processing pipeline and DVC**
-	You can check out all the preprocessing scripts in a corresponding files, but you don't need to worry about understanding and reproducing it 		correctly. I created a processing pipeline using DVC, which allows you to generate ready-to-train .csv files and actually train a model using 		only one command (I will explain how to do it in a corresponding section in [[#Getting Started]]).
+	In order to make situation a little bit better, I a performed a series of transforms.	
+	2. **Data processing pipeline and DVC**   
+	You can check out all the preprocessing scripts in a corresponding files, but you don't need to worry about understanding and reproducing it 		correctly. I created a processing pipeline using DVC, which allows you to generate ready-to-train .csv files and actually train a model using 		only one command (I will explain how to do it in a corresponding [section](#getting-started).
 	Since this is a competition, the pipeline is really simple and straightforward:      
 	<p align="center">
   		<img src="https://github.com/nazavr322/airbus-ship-detection/blob/main/reports/figures/dvc_pipeline.svg">
@@ -69,8 +69,8 @@ I can divide my work on this problem into a 3  most important parts:
 
 	This steps will do the following: clean data from duplicates and add `ShipCount` feature;  select more balanced subset of data; split this subset 	  into train and validation datasets; start training on this data with hyperparameters specified in the corresponding .json file (output of this 	  step will be weights of your trained model).
 2. **Model Architecture**    
-	To solve this task, i've used an UNet architecture, which is very popular in any segmentation problem, showing very good result with relatively small amount of parameters.
-	Firstly, i've tried to use UNet with a pretrained ResNet50 as an encoder part. Unfortunately, due to the computational constraints of my hardware, I could not train a model of this size. But still, I left all the necessary functions to build UNet with such architecture, so if you have enough memory, you change a few lines of code and experiment with more powerful model.
+	To solve this task, i've used an UNet architecture, which is very popular in many segmentation problems, showing very good results with relatively small amount of parameters.
+	Firstly, i've tried to use UNet with a pretrained ResNet50 as an encoder part. Unfortunately, due to the computational constraints of my hardware, I could not train a model of this size. But still, I left all the necessary functions to build UNet with such architecture, so if you have enough memory, you can change a few lines of code and experiment with more powerful model.
 	So, I ended up with much smaller UNet, with some deviations from original paper (In my model I have BatchNorm layers for example).
 3. **Loss Functions, Metrics and Hyperparameters**    
 	Here I will explain my choices of certain hyperparameters.
@@ -79,7 +79,7 @@ I can divide my work on this problem into a 3  most important parts:
 		
 		I know, that we can achieve better convergence if our loss function will be somewhat similar to the metric we use. So, the first thing i've tried was IoU Score as a metric and IoU Loss (simply defined as $1 - IoU$). It already produced some significant result with `IoU score == 0.58` on validation dataset. But loss decreased slowly and I understood that there must be better solution.
 
-		The combination of Dice Score and BCEDiceLoss (defined as $\beta * (1 - Dice) + (1 - \beta)*BCE$) worked perfect for me, even with equal weights ($\beta=0.5$) to both losses, I achieved `Dice Score = 0.73` on validation data only after 20 epochs of training.
+		The combination of Dice Score and BCEDiceLoss (defined as $\beta * (1 - Dice) + (1 - \beta)*BCE$) worked perfect for me, even with equal weights ($\beta = 0.5$) to both losses, I achieved `Dice Score = 0.73` on validation data only after 20 epochs of training.
 
 		*Loss functions that I heard about, but did not have time to test: Focal Loss, Huber Loss, Lovasz Loss*
 	2. **Hyperparameters**    
