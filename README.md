@@ -57,14 +57,14 @@ I can divide my work on this problem into a 3  most important parts:
 1.  **Data preparation**   
 	Understanding how data is structured is one of the main aspects of a successful solution. Therefore, the first thing I took on this project was 	EDA and different visualizations. You can check out full code and all the graphs at `notebooks/eda_and_viz.ipynb`, here I'll try to give you the 	 main idea.
 	1. **The first thing to check is a distribution of our data**
-			![Data distribution](https://github.com/nazavr322/airbus-ship-detection/blob/main/reports/figures/distribution_of_data.png "Data distribution")
+			<img src="https://github.com/nazavr322/airbus-ship-detection/blob/main/reports/figures/distribution_of_data.png">
 	As you can see, we have a severe imbalance. Almost 78% of images doesn't have ships on it at all, it is not very useful for ship segmentation task :)
 	In order to make situation a little bit better a performed a series of transforms.	
 	2. **Data processing pipeline and DVC**
 	You can check out all the preprocessing scripts in a corresponding files, but you don't need to worry about understanding and reproducing it 		correctly. I created a processing pipeline using DVC, which allows you to generate ready-to-train .csv files and actually train a model using 		only one command (I will explain how to do it in a corresponding section in [[#Getting Started]]).
 	Since this is a competition, the pipeline is really simple and straightforward:      
 	<p align="center">
-  		<img src="https://github.com/nazavr322/airbus-ship-detection/blob/main/reports/figures/dvc_pipeline.svg" />
+  		<img src="https://github.com/nazavr322/airbus-ship-detection/blob/main/reports/figures/dvc_pipeline.svg">
 	</p>
 
 	This steps will do the following: clean data from duplicates and add `ShipCount` feature;  select more balanced subset of data; split this subset 	  into train and validation datasets; start training on this data with hyperparameters specified in the corresponding .json file (output of this 	  step will be weights of your trained model).
