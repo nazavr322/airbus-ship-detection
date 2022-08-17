@@ -7,3 +7,6 @@ __pycache__/
 # model weights
 models/fullres_weights.h5
 models/unet_weights.h5
+
+# IDE stuff
+.idea/
