@@ -1,7 +1,7 @@
 import tensorflow as tf
-from tensorflow.keras import Model, Input
+from tensorflow.keras import Model, Input, Sequential
 from tensorflow.keras.layers import (
-    UpSampling2D, concatenate, Conv2D, BatchNormalization, MaxPool2D, ReLU
+    UpSampling2D, concatenate, Conv2D, BatchNormalization, MaxPool2D, ReLU, AveragePooling2D
 )
 from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input 
 
@@ -43,7 +43,7 @@ def _add_upsamling_block(model, previous_layer, encoder_layer):
 
 
 def create_unet50(
-    input_shape: tuple[int], img_scaling: int, weights: str = None
+    input_shape: tuple[int], weights: str = None
 ) -> Model:
     """Creates a UNet acrhitecture with pretrained ResNet50 encoder"""
     # process image to be compatible with ResNet
@@ -109,4 +109,16 @@ def create_unet(input_shape: tuple[int], weights=None) -> Model:
     # load weights from file if provided
     if weights:
         model.load_weights(weights)
+    return model
+
+
+def create_fullres_unet(path_to_weights: str):
+    """
+    Creates unet model that is compatible with original image size from dataset
+    """
+    model = Sequential()
+    model.add(AveragePooling2D((3, 3), input_shape=(768, 768, 3)))
+    model.add(create_unet((256, 256, 3)))
+    model.add(UpSampling2D((3, 3)))
+    model.load_weights(path_to_weights)
     return model
