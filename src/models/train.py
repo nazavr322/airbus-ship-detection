@@ -10,7 +10,7 @@ from tensorflow.keras.callbacks import ReduceLROnPlateau
 
 from src import ROOT_DIR
 from .models import create_unet
-from .functional import BCEDiceLoss, dice_coeff, IoU, IoU_Loss
+from .functional import BCEDiceLoss, tversky_coef
 from ..data.datasets import AirbusDataset
 
 
@@ -49,10 +49,14 @@ if __name__ == '__main__':
     optimizer = Adam(LR)
 
     # compile model
-    model.compile(optimizer, IoU_Loss, metrics=[IoU])
+    model.compile(optimizer, BCEDiceLoss, metrics=[tversky_coef])
 
-    # initialize scheduler
+    # initialize callbacks
     scheduler = ReduceLROnPlateau(factor=FACTOR, patience=PAT, verbose=1, mode='min')
+    checkpoint = ModelCheckpoint(
+        os.path.join(ROOT_DIR, 'checkpoint/'), monitor='val_loss', mode='min', verbose=1
+    )
+    callbacks = [scheduler, checkpoint]
 
     # initalize datasets
     IMG_DIR = os.path.join(ROOT_DIR, 'data/raw/train_v2/')
@@ -66,13 +70,22 @@ if __name__ == '__main__':
     # we dont do augmentations for validation
     val_dataset = AirbusDataset(PATH_TO_VAL, IMG_DIR, BATCH_SIZE, INP_IMG_SIZE[0])
     
+    width = os.get_terminal_size()[0]  # get terminal width
+    print(f'{"="*width}\n{"Training started".center(width)}\n{"="*width}\n')
     # start training process
-    history = model.fit(train_dataset, epochs=NUM_EPOCHS, callbacks=[scheduler],
+    history = model.fit(train_dataset, epochs=NUM_EPOCHS, callbacks=callbacks,
                         validation_data=val_dataset)
+    
+    # start evaluation
+    print(f'{"="*width}\n{"Evaluation started".center(width)}\n{"="*width}\n')
+    _, dice_score = model.evaluate(val_dataset)
+    print('Final Dice score computed on validation data = ', dice_score)
 
     # save model which works on full resolution
     fullres_model = Sequential()
-    fullres_model.add(AveragePooling2D((3, 3)))
+    fullres_model.add(AveragePooling2D((3, 3), input_shape=(768, 768, 3)))
     fullres_model.add(model)
     fullres_model.add(UpSampling2D((3, 3)))
-    fullres_model.save(os.path.join(ROOT_DIR, args.weights_path))
+    full_path_to_weights = os.path.join(ROOT_DIR, args.weights_path)
+    fullres_model.save_weights(full_path_to_weights)
+    print('Weights of your model successfully saved at:', full_path_to_weights)
