@@ -21,3 +21,11 @@ stages:
     outs:
       - data/processed/train_data.csv
       - data/processed/val_data.csv
+  
+  train:
+    cmd: python -m src.models.train data/processed/train_data.csv data/processed/val_data.csv models/params.json models/test_run.h5
+    deps:
+      - data/processed/train_data.csv
+      - data/processed/val_data.csv
+    outs:
+      - models/test_run.h5
