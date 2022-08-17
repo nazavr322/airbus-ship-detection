@@ -4,3 +4,9 @@ __pycache__/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# model weights
+models/fullres_weights.h5
+models/unet_weights.h5
+
+# IDE stuff
+.idea/
