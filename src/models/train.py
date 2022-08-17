@@ -1,5 +1,5 @@
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL']='3' # remove tensorflow warning messages
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # remove tensorflow warning messages
 import json
 from argparse import ArgumentParser
 
@@ -7,7 +7,7 @@ import albumentations as A
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import AveragePooling2D, UpSampling2D
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import ReduceLROnPlateau
+from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
 
 from src import ROOT_DIR
 from .models import create_unet, create_fullres_unet
