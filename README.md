@@ -1,5 +1,6 @@
 # Project overview
-A repository for the Winstars Technology test task - **[Airbus Ship Detection Challenge](https://www.kaggle.com/c/airbus-ship-detection/overview).**
+A repository for the Winstars Technology test task - **[Airbus Ship Detection Challenge](https://www.kaggle.com/c/airbus-ship-detection/overview).**    
+**NOTE:** attached to this project jupyter notebook with all the EDA and visualizations happened to be too huge for github to render it. If you don't want to clone this repository to only check out notebook content's, you can find the rendered version [here](https://nbviewer.org/github/nazavr322/airbus-ship-detection/blob/main/notebooks/eda_and_visualization.ipynb).
 ## Project structure
 ```nohighlight
 ├── README.md          <- The top-level README for developers using this project.
@@ -27,9 +28,9 @@ A repository for the Winstars Technology test task - **[Airbus Ship Detection Ch
 │   ├── __init__.py    <- Makes src a Python module
 │   │
 │   ├── data           <- Scripts to process and generate data
-│   │	├── balance_data.py       <- Script to balance number of classes in a  dataset.						  
+│   │	├── balance_data.py       <- Script to balance number of classes in a dataset.						  
 │   │   ├── datasets.py           <- File with dataset's definitions.
-│   │   ├── functional.py         <- File with utility functions relatet to data  processing.						  
+│   │   ├── functional.py         <- File with utility functions relatet to data processing.						  
 │   │	├── prepare_dataset.py    <- Script to clean data and add features.
 │   │   └── split_train_val.py    <- Script to perform train/validation split.	
 │   │
@@ -47,31 +48,31 @@ A repository for the Winstars Technology test task - **[Airbus Ship Detection Ch
 │
 ├── .gitignore         <- Files to ignore
 │
-├── dvc.lock           <- Information about tracked by DVC files.
+├── dvc.lock           <- Information about files tracked by DVC.
 │
-└── dvc.yaml           <- File with DVC data preprocessing pipeline definition.
+└── dvc.yaml           <- File with definition of DVC data preprocessing pipeline.
 ```
 ## Solution description
 I finished with a `Dice score = 0.73`, which I think is a pretty good result. Below I will try to give a brief overview of my work and share some thoughts on what worked and what didn't.
 I can divide my work on this problem into a 3  most important parts:
 1.  **Data preparation**   
-	Understanding how data is structured is one of the main aspects of a successful solution. Therefore, the first thing I took on this project was 	EDA and different visualizations. You can check out full code and all the graphs at `notebooks/eda_and_viz.ipynb`, here I'll try to give you the 	 main idea.
+	Understanding how data is structured is one of the main aspects of a successful solution. Therefore, the first thing I took on this project was 	EDA and different visualizations. You can check out full code and all the graphs at `notebooks/eda_and_viz.ipynb` or at the rendered version of this notebook [here](https://nbviewer.org/github/nazavr322/airbus-ship-detection/blob/main/notebooks/eda_and_visualization.ipynb), here I'll try to give you the main idea.   
 	1. **The first thing to check is a distribution of our data**
 			<img src="https://github.com/nazavr322/airbus-ship-detection/blob/main/reports/figures/distribution_of_data.png">
 	As you can see, we have a severe imbalance. Almost 78% of images doesn't have ships on it at all, it is not very useful for ship segmentation task :)
 	In order to make situation a little bit better, I a performed a series of transforms.	
 	2. **Data processing pipeline and DVC**   
-	You can check out all the preprocessing scripts in a corresponding files, but you don't need to worry about understanding and reproducing it 		correctly. I created a processing pipeline using DVC, which allows you to generate ready-to-train .csv files and actually train a model using 		only one command (I will explain how to do it in a corresponding [section](#getting-started).
+	You can check out all the preprocessing scripts in the corresponding files, but you don't need to worry about understanding and reproducing it 		correctly. I created a processing pipeline using DVC, which allows you to generate ready-to-train .csv files and actually train a model using 		only one command (I will explain how to do it in a corresponding [section](#getting-started).
 	Since this is a competition, the pipeline is really simple and straightforward:      
 	<p align="center">
   		<img src="https://github.com/nazavr322/airbus-ship-detection/blob/main/reports/figures/dvc_pipeline.svg">
 	</p>
 
-	This steps will do the following: clean data from duplicates and add `ShipCount` feature;  select more balanced subset of data; split this subset 	  into train and validation datasets; start training on this data with hyperparameters specified in the corresponding .json file (output of this 	  step will be weights of your trained model).
+	This steps will do the following: clean data from duplicates and add `ShipCount` feature;  select more balanced subset of data; split this subset 	  into train and validation datasets; start training on this data with hyperparameters specified in the corresponding .json file (output of this 	  step will be the weights of your trained model).
 2. **Model Architecture**    
 	To solve this task, i've used an UNet architecture, which is very popular in many segmentation problems, showing very good results with relatively small amount of parameters.
 	Firstly, i've tried to use UNet with a pretrained ResNet50 as an encoder part. Unfortunately, due to the computational constraints of my hardware, I could not train a model of this size. But still, I left all the necessary functions to build UNet with such architecture, so if you have enough memory, you can change a few lines of code and experiment with more powerful model.
-	So, I ended up with much smaller UNet, with some deviations from original paper (In my model I have BatchNorm layers for example).
+	So, I ended up with much smaller UNet, with some deviations from original paper (in my model I have BatchNorm layers for example).
 3. **Loss Functions, Metrics and Hyperparameters**    
 	Here I will explain my choices of certain hyperparameters.
 	1. **Loss functions and metrics**    
@@ -79,7 +80,7 @@ I can divide my work on this problem into a 3  most important parts:
 		
 		I know, that we can achieve better convergence if our loss function will be somewhat similar to the metric we use. So, the first thing i've tried was IoU Score as a metric and IoU Loss (simply defined as $1 - IoU$). It already produced some significant result with `IoU score == 0.58` on validation dataset. But loss decreased slowly and I understood that there must be better solution.
 
-		The combination of Dice Score and BCEDiceLoss (defined as $\beta * (1 - Dice) + (1 - \beta)*BCE$) worked perfect for me, even with equal weights ($\beta = 0.5$) to both losses, I achieved `Dice Score = 0.73` on validation data only after 20 epochs of training.
+		The combination of Dice Score and BCEDiceLoss (defined as $\beta * (1 - Dice) + (1 - \beta)*BCE$) worked perfect for me, even with equal weights ( $\beta = 0.5$ ) to both losses, I achieved `Dice Score = 0.73` on validation data only after 20 epochs of training.
 
 		*Loss functions that I heard about, but did not have time to test: Focal Loss, Huber Loss, Lovasz Loss*
 	2. **Hyperparameters**    
@@ -95,7 +96,7 @@ Below you can find some examples of mode predictions.
 ![10_to_15](https://github.com/nazavr322/airbus-ship-detection/blob/main/reports/figures/11_to_15_ex.png)
 
 # Getting started
-I am using python version `python 3.10.4` in this project.
+I am using python version `python 3.10.4` in this project.    
 After you cloned a git repo:
 - Unzip the [data](https://www.kaggle.com/c/airbus-ship-detection/data) in a `./data/raw/` directory.
 - I strongly recommend you to install dependencies using [`conda`](https://docs.conda.io/en/latest/) because it simplifies the process of installing `tensorflow` library. To install all needed dependencies create new conda virtual environment and run `conda install --file conda_req.txt`.    
