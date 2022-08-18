@@ -1,4 +1,5 @@
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # remove tensorflow warning messages
 import json
 from argparse import ArgumentParser
@@ -10,7 +11,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
 
 from src import ROOT_DIR
-from .models import create_unet, create_fullres_unet
+from .models import create_unet
 from .functional import BCEDiceLoss, tversky_coef
 from ..data.datasets import AirbusDataset
 
@@ -18,12 +19,18 @@ from ..data.datasets import AirbusDataset
 def create_parser() -> ArgumentParser:
     """Initializes parser"""
     parser = ArgumentParser()
-    parser.add_argument('train_path', help='path to a .csv file with trainig data')
-    parser.add_argument('val_path', help='path to a .csv file with validation data')
+    parser.add_argument(
+        'train_path', help='path to a .csv file with trainig data'
+    )
+    parser.add_argument(
+        'val_path', help='path to a .csv file with validation data'
+    )
     parser.add_argument(
         'params_path', help='path to a .json file with hyperparameter values'
     )
-    parser.add_argument('weights_path', help='where to store trained model weights')
+    parser.add_argument(
+        'weights_path', help='where to store trained model weights'
+    )
     return parser
 
 
@@ -35,7 +42,7 @@ if __name__ == '__main__':
     with open(os.path.join(ROOT_DIR, args.params_path), 'r') as f:
         params = json.load(f)
 
-    # intialize hyperparameters
+    # initialize hyperparameters
     BATCH_SIZE = params['batch_size']
     NUM_EPOCHS = params['num_epochs']
     LR = params['learning_rate']
@@ -53,31 +60,47 @@ if __name__ == '__main__':
     model.compile(optimizer, BCEDiceLoss, metrics=[tversky_coef])
 
     # initialize callbacks
-    scheduler = ReduceLROnPlateau(factor=FACTOR, patience=PAT, verbose=1, mode='min')
+    scheduler = ReduceLROnPlateau(
+        factor=FACTOR, patience=PAT, verbose=1, mode='min'
+    )
     check_path = os.path.join(ROOT_DIR, 'models/checkpoint/')
-    checkpoint = ModelCheckpoint(check_path, monitor='val_loss', mode='min', verbose=1)
+    checkpoint = ModelCheckpoint(
+        check_path, monitor='val_loss', mode='min', verbose=1
+    )
     callbacks = [scheduler, checkpoint]
 
-    # initalize datasets
+    # initialize datasets
     IMG_DIR = os.path.join(ROOT_DIR, 'data/raw/train_v2/')
     PATH_TO_TRAIN = os.path.join(ROOT_DIR, args.train_path)
     transforms = A.Compose([A.Flip(), A.RandomRotate90()])
     train_dataset = AirbusDataset(
-        PATH_TO_TRAIN, IMG_DIR, BATCH_SIZE, INP_IMG_SIZE[0], transforms=transforms
+        PATH_TO_TRAIN,
+        IMG_DIR,
+        BATCH_SIZE,
+        INP_IMG_SIZE[0],
+        transforms=transforms,
     )
 
     PATH_TO_VAL = os.path.join(ROOT_DIR, args.val_path)
     # we dont do augmentations for validation
-    val_dataset = AirbusDataset(PATH_TO_VAL, IMG_DIR, BATCH_SIZE, INP_IMG_SIZE[0])
-    
+    val_dataset = AirbusDataset(
+        PATH_TO_VAL, IMG_DIR, BATCH_SIZE, INP_IMG_SIZE[0]
+    )
+
     width = os.get_terminal_size()[0]  # get terminal width
     print(f'{"="*width}\n{"Training started".center(width)}\n{"="*width}\n')
     # start training process
-    history = model.fit(train_dataset, epochs=NUM_EPOCHS, callbacks=callbacks,
-                        validation_data=val_dataset)
-    
+    history = model.fit(
+        train_dataset,
+        epochs=NUM_EPOCHS,
+        callbacks=callbacks,
+        validation_data=val_dataset,
+    )
+
     # start evaluation
-    print(f'\n{"="*width}\n{"Evaluation started".center(width)}\n{"="*width}\n')
+    print(
+        f'\n{"="*width}\n{"Evaluation started".center(width)}\n{"="*width}\n'
+    )
     _, dice_score = model.evaluate(val_dataset)
     print('Final Dice score computed on validation data = ', dice_score)
 
