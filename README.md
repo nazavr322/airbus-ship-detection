@@ -1,5 +1,7 @@
 # Project overview
-A repository for the Winstars Technology test task - **[Airbus Ship Detection Challenge](https://www.kaggle.com/c/airbus-ship-detection/overview).**    
+A repository for the Winstars Technology test task - **[Airbus Ship Detection Challenge](https://www.kaggle.com/c/airbus-ship-detection/overview).**  
+Also, feel free to check out my [finished](https://github.com/nazavr322/heart-failure-prediction) projects and ones I'm currently [working on](https://github.com/nazavr322/ukr-handwriting-classification).   
+   
 **NOTE:** attached to this project jupyter notebook with all the EDA and visualizations happened to be too huge for github to render it. If you don't want to clone this repository to only check out notebook content's, you can find the rendered version [here](https://nbviewer.org/github/nazavr322/airbus-ship-detection/blob/main/notebooks/eda_and_visualization.ipynb).
 ## Project structure
 ```nohighlight
