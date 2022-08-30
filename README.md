@@ -42,6 +42,7 @@ Also, feel free to check out my [finished](https://github.com/nazavr322/heart-fa
 │   └── models         <- Scripts to define and train models
 │	├── functional.py    <- File with definitions of custom metrics and losses.
 │	├── models.py        <- File with model definitions.
+│	├── inference.py     <- Script to make predictions using trained model.
 │	└── train.py         <- Script to train model.
 │ 
 ├── .dvcignore         <- .gitignore analog for DVC.
@@ -101,12 +102,31 @@ Below you can find some examples of mode predictions.
 I am using python version `python 3.10.4` in this project.    
 After you cloned a git repo:
 - Unzip the [data](https://www.kaggle.com/c/airbus-ship-detection/data) in a `./data/raw/` directory.
-- I strongly recommend you to install dependencies using [`conda`](https://docs.conda.io/en/latest/) because it simplifies the process of installing `tensorflow` library. To install all needed dependencies create new conda virtual environment and run `conda install --file conda_req.txt`.    
-	If for some reason you can't/don't won't to install packages via `conda`, but you want to use GPU,  you can install dependencies with `pip`. But before that, [verify](https://www.tensorflow.org/install/pip#hardware_requirements) that you have compatible versions of CUDA software.
+- I strongly recommend you to install dependencies using [`conda`](https://docs.conda.io/en/latest/) because it simplifies the process of installing `tensorflow` library. To install all needed dependencies, execute following commands one by one from project root folder:   
+```nohighlight
+conda create -n <name_of_your_env> --file conda_req.txt
+conda activate <name_of_your_env>
+conda install -c conda-forge ncurses
+mkdir -p $CONDA_PREFIX/etc/conda/activate.d
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/' > $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
+pip install --upgrade pip
+pip install -r requirements.txt 
+```
+**After the download is complete, reopen the terminal and activate environment again**.
+
+
+If for some reason you can't/don't won't to install packages via `conda`, but you want to use GPU,  you can install dependencies with `pip` (not tested). But before that, [verify](https://www.tensorflow.org/install/pip#hardware_requirements) that you have compatible versions of CUDA software.
 	When it's done, create new `venv` environment and run     
 	`pip install -r requirements.txt`
 - Now, to generate processed data, run `dvc repro` command from the project root folder. It will generate all needed .csv files step-by-step and then start the training process. 
 
 After this you can continue experimenting with model hyperparameters or explore jupyter notebook with EDA and visualizations!
-
-
+## Inference
+There is also code for model inference in the project. You need to specify path to the weights of the trained model, path to a directory where you want to have your results and path to one or more images you want to segment (**NOTE:** all paths must be relative to the project root folder!).    
+   
+Here is an example for you, run `inference.py` script like this:
+```
+python -m src.models.inference models/fullres_weights.h5 predictions/ data/raw/test_v2/00a3ab3cc.jpg
+```
+To get a following prediction:
+![Inference Example](https://github.com/nazavr322/airbus-ship-detection/blob/main/reports/figures/inference_ex.png)
