@@ -12,7 +12,7 @@ Also, feel free to check out my [finished](https://github.com/nazavr322/heart-fa
 │   └── raw            <- The original, immutable data dump.
 │
 ├── models             <- Trained and serialized model weights, hyperparamets specification
-│							
+│   └── fullres_weights.h5    <- Weights of the pretrained model.							
 │
 ├── notebooks          <- Jupyter notebooks.
 │	└── eda_and_viz.ipynb    <- Notebook with EDA, visualization and demonstrations of predictions.
