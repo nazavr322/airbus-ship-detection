@@ -114,11 +114,7 @@ pip install --upgrade pip
 pip install -r requirements.txt 
 ```
 **After the download is complete, reopen the terminal and activate environment again**.
-
-
-If for some reason you can't/don't won't to install packages via `conda`, but you want to use GPU,  you can install dependencies with `pip` (not tested). But before that, [verify](https://www.tensorflow.org/install/pip#hardware_requirements) that you have compatible versions of CUDA software.
-	When it's done, create new `venv` environment and run     
-	`pip install -r requirements.txt`
+   
 - Now, to generate processed data, run `dvc repro` command from the project root folder. It will generate all needed .csv files step-by-step and then start the training process. 
 
 After this you can continue experimenting with model hyperparameters or explore jupyter notebook with EDA and visualizations!
