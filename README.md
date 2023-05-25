@@ -1,5 +1,5 @@
 # Project overview
-A repository for the Winstars Technology test task - **[Airbus Ship Detection Challenge](https://www.kaggle.com/c/airbus-ship-detection/overview).**  
+This repository contains my solution to the **[Kaggle Airbus Ship Detection Challenge](https://www.kaggle.com/c/airbus-ship-detection/overview).**  
 Here you will find all the source code, notebook with EDA and visualizations and weights of the pretrained model. Check out the project structure below to easily find what you are looking for.   
 Also, feel free to check out my [finished](https://github.com/nazavr322/heart-failure-prediction) projects and ones I'm currently [working on](https://github.com/nazavr322/ukr-handwriting-classification).   
    
